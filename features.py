@@ -75,6 +75,8 @@ class Features:
 
     def other_features(self,data):
         data['day']=data['datetime'].apply(lambda x: x.isoweekday())
+        data.ftr=data.ftr.map({'H':1,'A':0,'D':2})
+        data.htr=data.htr.map({'H':1,'A':0,'D':2})
         return data
 
     def execute(self):
@@ -84,3 +86,14 @@ class Features:
         data=object_data.join([rollin_features_a,rollin_features_d])
         data_all_features=self.other_features(data)
         return data_all_features    
+
+
+from sklearn.model_selection import train_test_split
+from collections import namedtuple
+
+def feature_selection(data):
+    features=data.select_dtypes('number').columns
+    trainx,valx,trainy,valy=train_test_split(data[features],data['ftr'],test_size=0.2,random_state=5)
+    container=namedtuple('container',['tx','vx','ty','vy'])
+    datas=container(trainx,valx,trainy,valy)
+    return datas 
