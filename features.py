@@ -92,8 +92,7 @@ from sklearn.model_selection import train_test_split
 from collections import namedtuple
 
 def feature_selection(data):
-    features=data.select_dtypes('number').columns
-    trainx,valx,trainy,valy=train_test_split(data[features],data['ftr'],test_size=0.2,random_state=5)
-    container=namedtuple('container',['tx','vx','ty','vy'])
-    datas=container(trainx,valx,trainy,valy)
+    features=data.select_dtypes('number')
+    container=namedtuple('container',['trainx','trainy'])
+    datas=container(features.drop(['ftr','htr'],axis=1),features['ftr'])
     return datas 
