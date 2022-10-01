@@ -1,54 +1,64 @@
-from hyperopt import fmin, hp, tpe, Trials
-from hyperopt.pyll.base import scope
+from time import time
+from sklearn.model_selection import StratifiedKFold
+from sklearn.decomposition import TruncatedSVD
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import make_scorer
+from xgboost import XGBClassifier, DMatrix
+from skopt.callbacks import DeadlineStopper, DeltaYStopper
+from skopt.space import Real, Categorical, Integer
 from functools import partial
-from sklearn.model_selection import KFold, cross_val_score
-from sklearn.metrics import accuracy_score, confusion_matrix
+import pprint
+import pandas as pd
+
+from skopt import BayesSearchCV
 
 
+model = XGBClassifier(random_state=0, booster='gbtree',
+                      tree_method='hist', eval_metric='mlogloss')
+scoring = make_scorer(partial(accuracy_score), greater_is_better=True)
+overdone_control = DeltaYStopper(delta=0.0001)
+time_limit_control = DeadlineStopper(total_time=60*60*1)
 
-# parameters for tuning in models in model.py
-params = {'n_estimators': scope.int(hp.quniform('n_estimators', 10, 100, 1)),
-          'max_depth': scope.int(hp.quniform('max_depth', 1, 50, 1)),
-          'min_samples_split': scope.int(hp.quniform('min_samples_split', 2, 20, 1)),
-          'min_samples_leaf': scope.int(hp.quniform('min_samples_leaf', 2, 20, 1)),
-          'max_features': hp.quniform('max_features', 0.1, 1, 0.1)}
-
-
-class bayes_estimation:
-    def __init__(self, params, trainx, trainy, valx, valy, model):
-        self.params = params
-        self.trainx = trainx
-        self.trainy = trainy
-        self.valx = valx
-        self.valy = valy
-        self.model = model
-
-    @staticmethod
-    def objective(params, trainx, trainy, valx, valy, model):
-        model[-1].set_params(**params)
-        model.fit(trainx, trainy)
-        preds = model.predict(valx)
-        out = accuracy_score(preds, valy)
-        return out
-
-    def parameters(self):
-        obj_func = partial(self.objective, trainx=self.trainx, trainy=self.trainy,
-                           valx=self.valx, valy=self.valy, model=self.model)
-        trials = Trials()
-        result = fmin(fn=obj_func,
-                      space=self.params,
-                      algo=tpe.suggest,
-                      trials=trials,
-                      max_evals=10
-                      )
-
-        return result
+search_spaces = {'learning_rate': Real(0.01, 1.0, 'uniform'),
+                 'max_depth': Integer(2, 12),
+                 'subsample': Real(0.1, 1.0, 'uniform'),
+                 # subsample ratio of columns by tree
+                 'colsample_bytree': Real(0.1, 1.0, 'uniform'),
+                 # L2 regularization
+                 #  'reg_lambda': Real(1e-9, 100., 'uniform'),
+                 #  'reg_alpha': Real(1e-9, 100., 'uniform'),  # L1 regularization
+                 'n_estimators': Integer(50, 5000)
+                 }
+# num_class=7,
+# learning_rate=0.1,
+# num_iterations=1000,
+# max_depth=10,
+# feature_fraction=0.7,
+# scale_pos_weight=1.5,
 
 
-def format_result(result):
-    """formats result paraameters from bayesian search into any desired form- usually a change in data type"""
-    result['n_estimators'] = int(result['n_estimators'])
-    result['min_samples_split'] = int(result['min_samples_split'])
-    result['min_samples_leaf'] = int(result['min_samples_leaf'])
-    result['max_depth'] = int(result['max_depth'])
-    return result
+def optimizer(trainx, trainy, title, callbacks=True):
+
+    skf = StratifiedKFold(n_splits=7, shuffle=True, random_state=0)
+    cv_strategy = skf.split(trainx, trainy)
+    optimizer = BayesSearchCV(estimator=model, search_spaces=search_spaces, scoring=scoring, cv=cv_strategy, n_iter=120,
+                              n_points=1, n_jobs=1, iid=False, return_train_score=False, refit=False, optimizer_kwargs={'base_estimator': 'GP'}, random_state=0)
+
+    start = time()
+    if callbacks:
+        optimizer.fit(trainx, trainy, callback=[
+                      overdone_control, time_limit_control])
+    else:
+        optimizer.fit(trainx, trainy)
+
+    d = pd.DataFrame(optimizer.cv_results_)
+    best_score = optimizer.best_score_
+    best_score_std = d.iloc[optimizer.best_index_].std_test_score
+    best_params = optimizer.best_params_
+
+    print((title + " took %.2f seconds,  candidates checked: %d, best CV score: %.3f " + u"\u00B1" +
+          " %.3f") % (time() - start, len(optimizer.cv_results_['params']), best_score, best_score_std))
+    print('Best parameters:')
+    pprint.pprint(best_params)
+    return best_params

@@ -1,26 +1,35 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from collections import namedtuple
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import mutual_info_classif
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
 
 class Features:
-    def __init__(self,home,away,objects,feature_names,home_data,away_data,data):
-        self.home=home
-        self.away=away
-        self.objects=objects
-        self.feature_names=feature_names
-        self.home_data1=home_data.copy()
-        self.away_data1=away_data.copy()
+    def __init__(self, home, away, objects, feature_names, home_data, away_data, data):
+        self.home = home
+        self.away = away
+        self.objects = objects
+        self.feature_names = feature_names
+        self.home_data1 = home_data.copy()
+        self.away_data1 = away_data.copy()
         self.home_data = home_data.copy()
         self.away_data = away_data.copy()
-        self.data=data
-        
+        self.data = data
 
     def rol_hac(self):
         # rolling home and away combined
         """making a rolling of all attributes representing a team offense"""
 
-        self.away_data1.columns = self.objects+self.home  # changed away to look like home
+        self.away_data1.columns = self.objects + \
+            self.home  # changed away to look like home
         combined_data = pd.concat([self.home_data1, self.away_data1],
-                                ignore_index=True)  # cancatted it
+                                  ignore_index=True)  # cancatted it
         combined_data['identification'] = np.array([np.ones(self.home_data1.shape[0]), np.zeros(
             self.home_data1.shape[0])], dtype=np.int64).reshape(-1, 1)  # making an identifier to split later
         # combined data-very important its data raveled vertically
@@ -32,7 +41,8 @@ class Features:
                 window=10, center=True, min_periods=5).mean().shift(1).fillna(method='bfill')[col]
             rol_hac[col] = feature
         home_df = rol_hac[combined_data.identification == 1]
-        away_df = rol_hac[combined_data.identification == 0].reset_index(drop=True)
+        away_df = rol_hac[combined_data.identification ==
+                          0].reset_index(drop=True)
         # hr-home rolling but its offencive
         home_df.columns = [i+'_hr'for i in self.feature_names]
         # away rolling but offencive
@@ -40,7 +50,6 @@ class Features:
         # suffixes are for overlapping columns
         rol_features = home_df.join(away_df)
         return rol_features
-
 
     def rol_hac_d(self):
         """this features are rolling home and away combined attributes(attributes like home shots,home fouls away yellow acrds etc )
@@ -51,7 +60,7 @@ class Features:
 
         self.home_data.columns = self.objects+self.away  # changed away to look like home
         combined_data = pd.concat([self.away_data, self.home_data],
-                                ignore_index=True)  # cancatted it
+                                  ignore_index=True)  # cancatted it
         combined_data['identification'] = np.array([np.ones(self.home_data.shape[0]), np.zeros(
             self.home_data.shape[0])], dtype=np.int64).reshape(-1, 1)  # making an identifier to split later
         # ones represent what is home teams defence and zeros represent away teams defence
@@ -65,34 +74,77 @@ class Features:
         home_df = rol_hac[combined_data.identification == 1]
         # -chr-conceded home rolling
         home_df.columns = [i+'_chr'for i in self.feature_names]
-        away_df = rol_hac[combined_data.identification == 0].reset_index(drop=True)
+        away_df = rol_hac[combined_data.identification ==
+                          0].reset_index(drop=True)
         # -car-conceded away rolling
         away_df.columns = [i+'_car'for i in self.feature_names]
         rol_features = home_df.join(away_df)
         return rol_features
 
-
-
-    def other_features(self,data):
-        data['day']=data['datetime'].apply(lambda x: x.isoweekday())
-        data.ftr=data.ftr.map({'H':1,'A':0,'D':2})
-        data.htr=data.htr.map({'H':1,'A':0,'D':2})
+    def other_features(self, data):
+        data['day'] = data['datetime'].apply(lambda x: x.isoweekday())
+        data.ftr = data.ftr.map({'H': 1, 'A': 0, 'D': 2})
+        data.htr = data.htr.map({'H': 1, 'A': 0, 'D': 2})
         return data
 
     def execute(self):
-        rollin_features_a=self.rol_hac()
-        rollin_features_d=self.rol_hac_d()
-        object_data=self.data[self.objects+['hometeam','awayteam']]
-        data=object_data.join([rollin_features_a,rollin_features_d])
-        data_all_features=self.other_features(data)
-        return data_all_features    
+        rollin_features_a = self.rol_hac()
+        rollin_features_d = self.rol_hac_d()
+        object_data = self.data[self.objects+['hometeam', 'awayteam']]
+        data = object_data.join([rollin_features_a, rollin_features_d])
+        data_all_features = self.other_features(data)
+        return data_all_features
 
 
-from sklearn.model_selection import train_test_split
-from collections import namedtuple
+def feature_selection(data, selected_features=None):
+    features = data.select_dtypes('number')
+    container = namedtuple('container', ['trainx', 'trainy'])
+    if selected_features is not None:
+        features = features[selected_features]
+    # these not rolling original results for reference dont need anymore!
+    datas = container(features.drop(['ftr', 'htr'], axis=1), features['ftr'])
+    return datas
 
-def feature_selection(data):
-    features=data.select_dtypes('number')
-    container=namedtuple('container',['trainx','trainy'])
-    datas=container(features.drop(['ftr','htr'],axis=1),features['ftr'])
-    return datas 
+
+def mutual_information(x, y, mask=None):
+    """function calculates the mi score in descendinhg trend given x and y"""
+    if mask is not None:
+        mi = mutual_info_classif(x.iloc[:, :mask], y)
+        mi = pd.DataFrame(mi, columns=['mi_score'], index=x.columns[:mask])
+    elif mask is None:
+        mi = mutual_info_classif(x, y)
+        mi = pd.DataFrame(mi, columns=['mi_score'], index=x.columns)
+
+    mi = mi.sort_values("mi_score", ascending=False)
+    return mi
+
+
+def pca_ing(x, standardize=True):
+    """function standardizes the data is not standardized and performs pca and outputs its componets in a df also loadings"""
+    if standardize:
+        sc = StandardScaler()
+        x_scaled = sc.fit_transform(x)
+        x = pd.DataFrame(x_scaled, columns=x.columns)
+    pca = PCA()
+    x_pca = pca.fit_transform(x)
+    components = [f'pca_{i}' for i in x.columns.values]
+    x_pca = pd.DataFrame(x_pca, columns=components)
+    loadings = pd.DataFrame(
+        pca.components_.T, columns=components, index=x.columns)
+    return x_pca, loadings
+
+
+def auto_best_features(x, y,  n_features, standardize_on_pca=True):
+    """best n_features(having most mi scores) among x and its pca version n_features=-1 for all features """
+    x_pca, _ = pca_ing(x, standardize=standardize_on_pca)
+    x.reset_index(drop=True, inplace=True)
+    all_features = x.join(x_pca)
+    mutual_info = mutual_information(all_features, y)
+    selected_cols = mutual_info.index.values[:n_features]
+    return all_features[selected_cols]
+
+
+def plotmi(mi):
+    sns.set_style('darkgrid')
+    plt.figure(figsize=(5, 20), dpi=100)
+    sns.barplot(mi['mi_score'], mi.index)
