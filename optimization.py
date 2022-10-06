@@ -14,21 +14,22 @@ import pandas as pd
 from skopt import BayesSearchCV
 
 
-model = XGBClassifier(random_state=0, booster='gbtree',
+model = XGBClassifier(random_state=0, booster='gbtree',objective='multi:softprob',
                       tree_method='hist', eval_metric='mlogloss')
+
 scoring = make_scorer(partial(accuracy_score), greater_is_better=True)
+
 overdone_control = DeltaYStopper(delta=0.0001)
 time_limit_control = DeadlineStopper(total_time=60*60*1)
 
 search_spaces = {'learning_rate': Real(0.01, 1.0, 'uniform'),
-                 'max_depth': Integer(2, 12),
+                 'max_depth': Integer(1, 12),
                  'subsample': Real(0.1, 1.0, 'uniform'),
-                 # subsample ratio of columns by tree
                  'colsample_bytree': Real(0.1, 1.0, 'uniform'),
                  # L2 regularization
                  #  'reg_lambda': Real(1e-9, 100., 'uniform'),
                  #  'reg_alpha': Real(1e-9, 100., 'uniform'),  # L1 regularization
-                 'n_estimators': Integer(50, 5000)
+                 'n_estimators': Integer(1, 500)
                  }
 # num_class=7,
 # learning_rate=0.1,
