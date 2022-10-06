@@ -26,7 +26,7 @@ Premier league matche details from 2000 to 2017 season. Featurs are different pe
 |  AC| away corners | 
 |  HF| home fouls | 
 |  AF|  away fouls| 
-| HY |  home yellow| 
+| HY |  home yellow | 
 | AY | away yellow | 
 | HR |  home red| 
 | AR | away red | 
