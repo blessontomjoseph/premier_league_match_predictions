@@ -8,38 +8,41 @@ Premier league matche details from 2000 to 2017 season. Featurs are different pe
 | Feature | Feature Abbreviation     | 
 | :-------- | :------- | 
 |Season  | year of season  | 
-| Datetime |datetome details  | 
+| Datetime |datetime details  | 
 | HomeTeam |  home team name| 
 |  AwayTeam| away team name | 
 | FTHG | full time home goals | 
 | FTAG |  full time away goals| 
-| HTHG |  half tome home goals| 
+| HTHG |  half time home goals| 
 |  HTAG| half time away goals | 
 | FTR | full time results | 
 |  HTR|  half time results| 
-|  Referee| referee name | 
-| HS | home shots | 
-| AS |  away shots| 
-| HST |  home shots on target| 
-|  AST|  away shots on target| 
-|  HC|  home corners| 
-|  AC| away corners | 
-|  HF| home fouls | 
-|  AF|  away fouls| 
-| HY |  home yellow | 
-| AY | away yellow | 
-| HR |  home red| 
-| AR | away red | 
+|  Referee|  name of referee | 
+| HS | home team shots | 
+| AS |  away team shots| 
+| HST |  home team shots on target| 
+|  AST|  away team shots on target| 
+|  HC|  home team corners| 
+|  AC| away team corners | 
+|  HF| home team fouls | 
+|  AF|  away team fouls| 
+| HY |  home team yellow cards| 
+| AY | away team yellow cards| 
+| HR |  home team red cards| 
+| AR | away team red cards| 
 
 
 ### Design
 ![poster](rd_fils/workflow.jpg)
 
 ### Feature Engineering
-many of the features are potential data leakage factors since most of them are happening in the match so the approach is to change the features into  rolling features. so every time we look at a match we would see their current profile/form delivered through the attibutes
+many of the features are potential data leakage factors, since most of them are recorder in the match. so, the approach is to change the features into  rolling features. so every time we look at a match we would see their current profile/form delivered through the attibutes
+![poster](rd_fils/features.jpg)
+
+
 
 #### Attack 
-
+all of the home and away features 
 
 #### Defence 
 

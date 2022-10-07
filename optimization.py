@@ -10,12 +10,16 @@ from skopt.space import Real, Categorical, Integer
 from functools import partial
 import pprint
 import pandas as pd
+import tqdm
 
 from skopt import BayesSearchCV
 
 
-model = XGBClassifier(random_state=0, booster='gbtree',objective='multi:softprob',
-                      tree_method='hist', eval_metric='mlogloss')
+model = XGBClassifier(random_state=0, booster='gbtree', objective='multi:softprob', tree_method='hist',
+                        eval_metric=accuracy_score, verbosity=0)
+
+# eval_metric='mlogloss' checkout
+
 
 scoring = make_scorer(partial(accuracy_score), greater_is_better=True)
 
@@ -26,13 +30,11 @@ search_spaces = {'learning_rate': Real(0.01, 1.0, 'uniform'),
                  'max_depth': Integer(1, 12),
                  'subsample': Real(0.1, 1.0, 'uniform'),
                  'colsample_bytree': Real(0.1, 1.0, 'uniform'),
-                 # L2 regularization
-                 #  'reg_lambda': Real(1e-9, 100., 'uniform'),
-                 #  'reg_alpha': Real(1e-9, 100., 'uniform'),  # L1 regularization
+                  'reg_lambda': Real(1e-9, 100., 'uniform'),
+                  'reg_alpha': Real(1e-9, 100., 'uniform'),  # L1 regularization
                  'n_estimators': Integer(1, 500)
                  }
 # num_class=7,
-# learning_rate=0.1,
 # num_iterations=1000,
 # max_depth=10,
 # feature_fraction=0.7,
@@ -41,15 +43,14 @@ search_spaces = {'learning_rate': Real(0.01, 1.0, 'uniform'),
 
 def optimizer(trainx, trainy, title, callbacks=True):
 
-    skf = StratifiedKFold(n_splits=7, shuffle=True, random_state=0)
+    skf = StratifiedKFold(n_splits=2, shuffle=True, random_state=0)
     cv_strategy = skf.split(trainx, trainy)
     optimizer = BayesSearchCV(estimator=model, search_spaces=search_spaces, scoring=scoring, cv=cv_strategy, n_iter=120,
                               n_points=1, n_jobs=1, iid=False, return_train_score=False, refit=False, optimizer_kwargs={'base_estimator': 'GP'}, random_state=0)
 
     start = time()
     if callbacks:
-        optimizer.fit(trainx, trainy, callback=[
-                      overdone_control, time_limit_control])
+        tqdm(optimizer.fit(trainx, trainy, callback=[overdone_control, time_limit_control]))
     else:
         optimizer.fit(trainx, trainy)
 
