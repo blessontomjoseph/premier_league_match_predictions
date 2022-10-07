@@ -26,8 +26,7 @@ class Features:
         # rolling home and away combined
         """making a rolling of all attributes representing a team offense"""
 
-        self.away_data1.columns = self.objects + \
-            self.home  # changed away to look like home
+        self.away_data1.columns = self.objects + self.home  # changed away to look like home
         combined_data = pd.concat([self.home_data1, self.away_data1],
                                   ignore_index=True)  # cancatted it
         combined_data['identification'] = np.array([np.ones(self.home_data1.shape[0]), np.zeros(
@@ -43,9 +42,9 @@ class Features:
         home_df = rol_hac[combined_data.identification == 1]
         away_df = rol_hac[combined_data.identification ==
                           0].reset_index(drop=True)
-        # hr-home rolling but its offencive
+        # hr-home rolling but its offensive
         home_df.columns = [i+'_hr'for i in self.feature_names]
-        # away rolling but offencive
+        # away rolling but offensive
         away_df.columns = [i+'_ar'for i in self.feature_names]
         # suffixes are for overlapping columns
         rol_features = home_df.join(away_df)
@@ -85,6 +84,7 @@ class Features:
         data['day'] = data['datetime'].apply(lambda x: x.isoweekday())
         data.ftr = data.ftr.map({'H': 1, 'A': 0, 'D': 2})
         data.htr = data.htr.map({'H': 1, 'A': 0, 'D': 2})
+        data.season=
         return data
 
     def execute(self):
@@ -97,12 +97,14 @@ class Features:
 
 
 def feature_selection(data, selected_features=None):
-    features = data.select_dtypes('number')
+    # data = data.select_dtypes('number')  #selecting only numerical features faor starters
     container = namedtuple('container', ['trainx', 'trainy'])
     if selected_features is not None:
-        features = features[selected_features]
+        features = data[selected_features]
+    else:
+        features=data
     # these not rolling original results for reference dont need anymore!
-    datas = container(features.drop(['ftr', 'htr'], axis=1), features['ftr'])
+    datas = container(features.drop(['ftr', 'htr','datetime'], axis=1), features['ftr'])
     return datas
 
 
