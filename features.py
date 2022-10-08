@@ -82,9 +82,8 @@ class Features:
 
     def other_features(self, data):
         data['day'] = data['datetime'].apply(lambda x: x.isoweekday())
-        data.ftr = data.ftr.map({'H': 1, 'A': 0, 'D': 2})
-        data.htr = data.htr.map({'H': 1, 'A': 0, 'D': 2})
-        data.season=
+        data.ftr = data.ftr.map({'H': 2, 'A': 1, 'D': 0})
+        data.htr = data.htr.map({'H': 2, 'A': 1, 'D': 0})
         return data
 
     def execute(self):
