@@ -96,7 +96,7 @@ class Features:
 
 
 def feature_selection(data, selected_features=None):
-    # data = data.select_dtypes('number')  #selecting only numerical features faor starters
+    # data = data.select_dtypes('number')  #selecting only numerical features for starters
     container = namedtuple('container', ['trainx', 'trainy'])
     if selected_features is not None:
         features = data[selected_features]
