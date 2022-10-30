@@ -26,7 +26,8 @@ class Features:
         # rolling home and away combined
         """making a rolling of all attributes representing a team offense"""
 
-        self.away_data1.columns = self.objects + self.home  # changed away to look like home
+        self.away_data1.columns = self.objects + \
+            self.home  # changed away to look like home
         combined_data = pd.concat([self.home_data1, self.away_data1],
                                   ignore_index=True)  # cancatted it
         combined_data['identification'] = np.array([np.ones(self.home_data1.shape[0]), np.zeros(
@@ -108,9 +109,9 @@ def features_targets(data, selected_features=None):
     if selected_features is not None:
         features = data[selected_features]
     else:
-        features=data
+        features = data
     # these not rolling original results for reference dont need anymore!
-    ind_feats = features.drop(['ftr', 'htr','datetime','referee'], axis=1)
+    ind_feats = features.drop(['ftr', 'htr', 'datetime', 'referee'], axis=1)
     ind_feats = encoder(ind_feats, ['hometeam', 'awayteam', 'season'])
     datas = container(ind_feats, features['ftr'])
     return datas
