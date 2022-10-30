@@ -1,5 +1,5 @@
 # Premier League Predictions :england:
-![poster](rd_fils/O1Ha.gif)
+![poster](rd_fils/premier-league-2.png)
 ### Data
 Features:
 Premier league matche details from 2000 to 2017 season. Featurs are different perfomance metrices and general match evaluation attributes.
