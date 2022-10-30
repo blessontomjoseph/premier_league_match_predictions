@@ -1,5 +1,5 @@
 # Premier League Predictions :england:
-![poster](rd_fils/premier-league-2.png)
+![poster](rd_files/premier-league-2.png)
 ### Data
 Features:
 Premier league matche details from 2000 to 2017 season. Featurs are different perfomance metrices and general match evaluation attributes.
@@ -33,7 +33,7 @@ Premier league matche details from 2000 to 2017 season. Featurs are different pe
 
 
 ### Design
-![poster](rd_fils/workflow.jpg)
+![poster](rd_files/workflow.jpg)
 
 ### Feature Engineering
 many of the features are potential data leakage factors, since most of them are recorder in the match. so, the approach is to change the features into  rolling features. so every time we look at a match we would see their current profile/form delivered through the attibutes recorded through the last 'n' matches n taken as a costomizable number.
@@ -48,4 +48,4 @@ All of them as the rolling avarages, of last n matches they played. and before e
 
 ### Ealaborate Pipeline
 
-![poster](rd_fils/elaborate_flow.jpg)
+![poster](rd_files/elaborate_flow.jpg)
