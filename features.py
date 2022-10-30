@@ -95,7 +95,14 @@ class Features:
         return data_all_features
 
 
-def feature_selection(data, selected_features=None):
+def encoder(data, features):
+    from sklearn.preprocessing import OrdinalEncoder
+    oe = OrdinalEncoder()
+    data[features] = oe.fit_transform(data[features])
+    return data
+
+
+def features_targets(data, selected_features=None):
     # data = data.select_dtypes('number')  #selecting only numerical features for starters
     container = namedtuple('container', ['trainx', 'trainy'])
     if selected_features is not None:
@@ -103,7 +110,9 @@ def feature_selection(data, selected_features=None):
     else:
         features=data
     # these not rolling original results for reference dont need anymore!
-    datas = container(features.drop(['ftr', 'htr','datetime'], axis=1), features['ftr'])
+    ind_feats = features.drop(['ftr', 'htr','datetime','referee'], axis=1)
+    ind_feats = encoder(ind_feats, ['hometeam', 'awayteam', 'season'])
+    datas = container(ind_feats, features['ftr'])
     return datas
 
 

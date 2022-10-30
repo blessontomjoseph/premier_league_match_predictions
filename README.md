@@ -46,6 +46,6 @@ what am i really trying to get from the data is every time a match happens betwe
 All of them as the rolling avarages, of last n matches they played. and before every match we have a statistical match-up between these features.
 
 
-#### Ealaborate Pipeline
+### Ealaborate Pipeline
 
 ![poster](rd_fils/elaborate_flow.jpg)
