@@ -36,15 +36,16 @@ Premier league matche details from 2000 to 2017 season. Featurs are different pe
 ![poster](rd_fils/workflow.jpg)
 
 ### Feature Engineering
-many of the features are potential data leakage factors, since most of them are recorder in the match. so, the approach is to change the features into  rolling features. so every time we look at a match we would see their current profile/form delivered through the attibutes
-![poster](rd_fils/features.jpg)
+many of the features are potential data leakage factors, since most of them are recorder in the match. so, the approach is to change the features into  rolling features. so every time we look at a match we would see their current profile/form delivered through the attibutes recorded through the last 'n' matches n taken as a costomizable number.
+what am i really trying to get from the data is every time a match happens between a home team and away team we need to get 2 sets of features for both the teams
+- Home attck features - rolling attcking features of last n matches
+- Home defeance features - rolling, oppositions attacking features in last n matches
+- Away attack features - rolling attcking features of last n matches
+- Away defence feature - solling, oppositions attacking features in last n matches
+
+All of them as the rolling avarages, of last n matches they played. and before every match we have a statistical match-up between these features.
 
 
+### Ealaborate Pipeline
 
-#### Attack 
-all of the home and away features 
-
-#### Defence 
-
-### Algorithm
-
+![poster](rd_fils/elaborate_flow.jpg)
